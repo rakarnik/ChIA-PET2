@@ -104,6 +104,7 @@ QCplotB <-function(statfile){
   samsNs = sams$V2/1000000
   type = c("High MAPQ","Low MAPQ","Unmapped","High MAPQ","Low MAPQ","Unmapped",
            "Deduplicated","Duplicates")
+  unique_type = c("Unmapped","Low MAPQ","High MAPQ","Duplicates","Deduplicated")
   x = c(rep("R1",3), rep("R2",3),rep("PET",2) )
   count = c(samsNs[1]-samsNs[2]-samsNs[3], samsNs[2], samsNs[3],
             samsNs[1]-samsNs[4]-samsNs[5], samsNs[4], samsNs[5],
@@ -118,12 +119,13 @@ QCplotB <-function(statfile){
   df$label <- c( count[1:6]/samsNs[1], count[7:8]/samsNs[6] )*100
   df$x <- as.character(df$x)
   df$x <- factor(df$x, levels=unique(df$x))
+  df$type <- factor(df$type, levels=unique_type)
 
   figb <- ggplot(df,aes(x=x,y=count,fill=type))+
     geom_bar(stat="identity")
-  figb <- figb +geom_text(aes(x=x, y=labelpos, label=sprintf("%1.2f%%", label)),fontface="bold", size=2.5)+
+  figb <- figb +geom_text(aes(x=x, y=df$labelpos, label=sprintf("%1.2f%%", label)),fontface="bold", size=2.5)+
     ylab("Count (Millions)")+xlab(NULL)+
-    ggtitle("Read Alignment")+scale_fill_brewer(palette=1,breaks=c("Unmapped","Low MAPQ","High MAPQ","Duplicates","Deduplicated"))
+    ggtitle("Read Alignment")+scale_fill_brewer(palette=1,breaks=unique_type)
   figb
 }
 
@@ -161,11 +163,12 @@ QCplotC <-function(statfile){
   df$label <- c( count[1:3]/samsNs[8], count[4:7]/sum(count[4:7]) )*100
   df$x <- as.character(df$x)
   df$x <- factor(df$x, levels=unique(df$x))
+  df$type <- factor(df$type, levels=rev(type))
 
   figc <- ggplot(df,aes(x=x,y=count,fill=type))+geom_bar(stat="identity")
   figc <- figc +geom_text(aes(x=x, y=labelpos, label=sprintf("%1.2f%%", label)),fontface="bold", size=2.5)+
     ylab("Count (Millions)")+xlab(NULL)+ggtitle("Read Pairs")
-  figc+scale_fill_manual(values=cbPalette[1:7],breaks=c("OneEndMapped","Inter_Chrom","Intra_Chrom","Others","InSamePeak","Inter_BetweenPeaks","Intra_BetweenPeaks"))
+  figc+scale_fill_manual(values=cbPalette[1:7],breaks=type)
 }
 
 
